@@ -40,13 +40,42 @@ export const parseTitleLine = (titleLine: string): BookMetadata => {
   return { title, authors };
 }
 
+function ParseTimestampGerman(timestamp:string) {
+const germanMonths: { [key: string]: number } = {
+  Januar: 0,
+  Februar: 1,
+  März: 2,
+  April: 3,
+  Mai: 4,
+  Juni: 5,
+  Juli: 6,
+  August: 7,
+  September: 8,
+  Oktober: 9,
+  November: 10,
+  Dezember: 11,
+};
+
+const dateParts = timestamp.split(/[\s:]+/);
+
+const day = parseInt(dateParts[0]);
+const month:number = germanMonths[dateParts[1]];
+const year = parseInt(dateParts[2]);
+const hours = parseInt(dateParts[3]);
+const minutes = parseInt(dateParts[4]);
+const seconds = parseInt(dateParts[5]);
+
+const parsedDate = new Date(year, month, day, hours, minutes, seconds);
+console.log(parsedDate)
+return parsedDate;
+}
+
 export const parseMetaLine = (metaLine: string): KindleAnnotation => {
 
-  // TODO: Remove dependency on english keywords
-  const typeRx = /^- Your\s(?<type>Note|Highlight|Bookmark)/;
-  const pageRx = /page\s+(?<page>\d+)/;
-  const locationRx = /Location\s+(?<start>\d+)(-(?<end>\d+))?/;
-  const timestampRx = /Added on\s+(?<timestamp>.*)$/;
+  // TODO: Remove dependency on english and german keywords
+  const typeRx = /^- (?:Your|Ihr|Ihre)\s(?<type>Note|Highlight|Bookmark|Markierung|Notiz|Lesezeichen)/;
+  const pageRx = /(?:page|auf Seite)\s+(?<page>\d+)/;
+  const locationRx = /(?:Location|bei Position)\s+(?<start>\d+)(-(?<end>\d+))?/;
 
   const type = typeRx.exec(metaLine)?.groups?.['type'];
 
@@ -81,10 +110,16 @@ export const parseMetaLine = (metaLine: string): KindleAnnotation => {
 
   let timestamp = new Date();
 
+  const timestampRx = /Added on\s+(?<timestamp>.*)$/;
   const timestampVal = timestampRx.exec(metaLine)?.groups?.['timestamp'];
-
   if (timestampVal) {
     timestamp = new Date(Date.parse(timestampVal));
+  }
+
+  const timestampRxGerman = /Hinzugefügt am \w+,\s+(?<timestamp>.*)$/;
+  const timestampValGerman = timestampRxGerman.exec(metaLine)?.groups?.['timestamp'];
+  if (timestampValGerman) {
+    timestamp = ParseTimestampGerman(timestampValGerman);
   }
 
   return {

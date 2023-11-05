@@ -16,6 +16,12 @@ const NOTE_CLIPPING = `Effective Notetaking (Study Skills Book 1) (McPherson, Fi
 
 Thinking about a subject before reading about it can increase retention.`;
 
+const CLIPPING_1_GERMAN = `The Almanack of Naval Ravikant: A Guide to Wealth and Happiness (Eric Jorgenson)
+- Ihre Markierung auf Seite 26 | bei Position 394-395 | Hinzugefügt am Dienstag, 28. März 2023 07:56:29
+
+So, technology is the set of things, as Alan Kay said, that don’t quite work yet [correction: Danny Hillis]. Once something works, it’s no longer technology.`;
+
+
 describe('parseKindleHighlights', () => {
   describe('parseKindleHighlights', () => {
     it('should combine highlights from the same book', () => {
@@ -56,6 +62,14 @@ describe('parseKindleHighlights', () => {
 
     describe('Chinese', () => {
       const META_LINE = '- 您在位置 #1920-1921的标注 | 添加于 2022年6月6日星期一 下午4:09:21';
+
+      it('should parse without failing', () => {
+        expect(() => parseMetaLine(META_LINE)).not.toThrow();
+      });
+    });
+
+    describe('German', () => {
+      const META_LINE = '- Ihre Markierung auf Seite 26 | bei Position 394-395 | Hinzugefügt am Dienstag, 28. März 2023 07:56:29';
 
       it('should parse without failing', () => {
         expect(() => parseMetaLine(META_LINE)).not.toThrow();
@@ -104,6 +118,38 @@ describe('parseKindleHighlights', () => {
     it('should parse end location', () => {
       const result = parseClipping(CLIPPING_1);
       expect(result).toHaveProperty('location.end', 130);
+    });
+  });
+
+  describe('parseClippingGerman', () => {
+    it('should parse book title', () => {
+      const result = parseClipping(CLIPPING_1_GERMAN);
+      expect(result).toHaveProperty('title', 'The Almanack of Naval Ravikant: A Guide to Wealth and Happiness');
+    });
+
+    it('should parse author name', () => {
+      const result = parseClipping(CLIPPING_1_GERMAN);
+      expect(result).toHaveProperty('authors', expect.arrayContaining(['Eric Jorgenson']));
+    });
+
+    it('should parse timestamp', () => {
+      const result = parseClipping(CLIPPING_1_GERMAN);
+      expect(result).toHaveProperty('timestamp', new Date(Date.parse('2023-03-28T05:56:29.000Z')));
+    });
+
+    it('should parse page number', () => {
+      const result = parseClipping(CLIPPING_1_GERMAN);
+      expect(result).toHaveProperty('page', 26);
+    });
+
+    it('should parse start location', () => {
+      const result = parseClipping(CLIPPING_1_GERMAN);
+      expect(result).toHaveProperty('location.start', 394);
+    });
+
+    it('should parse end location', () => {
+      const result = parseClipping(CLIPPING_1_GERMAN);
+      expect(result).toHaveProperty('location.end', 395);
     });
   });
 });
